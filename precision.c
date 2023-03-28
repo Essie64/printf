@@ -2,60 +2,45 @@
 #include <stdio.h>
 
 /**
- * get_precision - custom printf function that handles precision for non-custom conversion specifiers
- * @format: format string
- * Return: number of characters printed
+ * get_precision - Calculates the precision for printing
+ * @format: Formatted string in which to print the arguments
+ * @i: List of arguments to be printed.
+ * @list: list of arguments.
+ *
+ * Return: Precision.
  */
-int get_precision(const char *format, ...)
+int get_precision(const char *format, int *i, va_list list)
 {
-	va_list args;
-	 int printed_chars = 0;
-	 int precision = -1;
+	int curr_i = *i + 1;
+	int precision = 0;
 
-    va_start(args, format);
+	if (format[curr_i] != '.')
+	return 0;
 
-    while (*format)
-    {
-        if (*format == '%')
-        {
-            format++;
+	curr_i++;
 
- 	if (*format == '.')
-            {
-                precision = 0;
-                while (*(++format) >= '0' && *format <= '9')
-                    precision = precision * 10 + (*format - '0');
-            }
+	while (is_digit(format[curr_i]))
+	{
+	precision *= 10;
+	precision += format[curr_i] - '0';
+	curr_i++;
+    	}
 
-            switch (*format)
-            {
-                case 'd':
-                    printed_chars += printf("%d", va_arg(args, int));
-                    break;
-                case 'f':
-                    printed_chars += precision == -1 ? printf("%f", va_arg(args, double))
-                                                      : printf("%.*f", precision, va_arg(args, double));
-                    break;
-                case 'c':
-                    printed_chars += printf("%c", va_arg(args, int));
-                    break;
-                case 's':
-                    printed_chars += printf("%.*s", precision, va_arg(args, char *));
-                    break;
-                default:
-                    printed_chars += printf("Invalid format specifier");
-                    break;
-            }
-        }
-        else
-        {
-            putchar(*format);
-            printed_chars++;
-        }
-        format++;
-    }
+	if (format[curr_i] == '*')
+	{
+	curr_i++;
+	int arg = va_arg(list, int);
+	if (arg >= 0)
+	{
+		precision = arg;
+	}
+	else
+	{
+		precision = -1;
+	}
+	}
 
-    va_end(args);
+	*i = curr_i - 1;
 
-    return printed_chars;
+	return precision;
 }
