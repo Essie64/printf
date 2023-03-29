@@ -1,12 +1,12 @@
 #include "main.h"
 
 /**
- * get_precision - Calculates the precision for printing
- * @format: Formatted string in which to print the arguments
+ * get_precision - Calculates the precision for printing.
+ * @format: Formatted string in which to print the arguments.
  * @i: List of arguments to be printed.
- * @list: list of arguments.
+ * @list: List of arguments.
  *
- * Return: Precision.
+ * Return: Precision on success, -1 on error.
  */
 int get_precision(const char *format, int *i, va_list list)
 {
@@ -14,14 +14,16 @@ int get_precision(const char *format, int *i, va_list list)
 	int precision = 0;
 
 	if (format[curr_i] != '.')
-		return (precision);
+		return (-1); /* No precision specifier found */
 
-	precision = 0;
+	precision = -1; /* Initialize to -1 to detect errors */
 
 	for (curr_i += 1; format[curr_i] != '\0'; curr_i++)
 	{
 		if (is_digit(format[curr_i]))
 		{
+			if (precision < 0)
+				precision = 0;
 			precision *= 10;
 			precision += format[curr_i] - '0';
 		}
@@ -29,11 +31,22 @@ int get_precision(const char *format, int *i, va_list list)
 		{
 			curr_i++;
 			precision = va_arg(list, int);
+			if (precision < 0)
+				return (-1); /* Invalid precision value */
 			break;
 		}
+		else if (format_specifier(format[curr_i]))
+		{
+			break; /* Precision specifier is complete */
+		}
 		else
-			break;
+		{
+			return (-1); /* Invalid character in precision specifier */
+		}
 	}
+
+	if (precision < 0)
+		return (-1); /* Precision specifier not found or invalid */
 
 	*i = curr_i - 1;
 
